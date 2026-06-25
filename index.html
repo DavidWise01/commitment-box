@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Commitment Box — sealed verdicts, simultaneous reveal</title>
+<style>
+  :root{
+    --bg:#0a0710; --panel:#140d20; --edge:#2e2148; --ink:#ece3f7; --dim:#9a86bd; --faint:#6b5a8c;
+    --violet:#a78bfa; --violet2:#c4b5fd; --glow:#7c3aed; --a:#34d399; --b:#22d3ee;
+    --evid:#34d399; --fake:#fb7185; --base:#fbbf24;
+    --mono:'SFMono-Regular',ui-monospace,Menlo,Consolas,monospace;
+    --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);line-height:1.55;
+    background-image:radial-gradient(1200px 600px at 72% -10%,#1a1030 0%,transparent 60%),
+      radial-gradient(900px 520px at 0% 100%,#150b28 0%,transparent 55%);}
+  .wrap{max-width:1000px;margin:0 auto;padding:42px 26px 90px}
+  header{border-bottom:1px solid var(--edge);padding-bottom:22px;margin-bottom:30px}
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--violet);opacity:.9}
+  h1{font-size:32px;line-height:1.13;margin:.32em 0 .18em;font-weight:600}
+  h1 em{color:var(--violet2);font-style:italic}
+  .sub{color:var(--dim);font-size:15.5px;max-width:78ch}
+  .lin{font-family:var(--mono);font-size:11.5px;color:var(--faint);margin-top:14px}
+  .lin b{color:var(--violet);font-weight:500}
+  section{margin:38px 0}
+  h2{font-size:13px;font-family:var(--mono);letter-spacing:.22em;text-transform:uppercase;color:var(--violet2);
+    border-left:2px solid var(--glow);padding-left:11px;margin:0 0 6px}
+  .lede{color:var(--dim);font-size:15px;margin:0 0 18px;max-width:80ch}
+  .lede b{color:var(--violet2);font-weight:400}
+  .panel{background:linear-gradient(180deg,var(--panel),#100a1b);border:1px solid var(--edge);border-radius:14px;
+    padding:20px;box-shadow:0 1px 0 #2e2148 inset,0 24px 60px -40px #000}
+  .controls{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-bottom:14px}
+  button{font-family:var(--mono);font-size:12px;color:var(--ink);background:#241738;border:1px solid var(--edge);
+    border-radius:8px;padding:7px 11px;cursor:pointer;transition:.15s}
+  button:hover{background:#2e1f48;border-color:var(--violet)}
+  button.on{background:var(--glow);border-color:var(--violet2);color:#fff}
+  button.fake.on{background:var(--fake);border-color:#fda4af;color:#1a0410}
+  label.sl{font-family:var(--mono);font-size:11px;color:var(--dim);display:flex;align-items:center;gap:8px}
+  input[type=range]{accent-color:var(--violet);width:90px}
+  canvas{display:block;border-radius:10px;background:#0c0717;border:1px solid var(--edge);max-width:100%}
+  .cap{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:7px;text-align:center}
+  .lab{display:grid;grid-template-columns:1fr auto;gap:22px;align-items:start}
+  @media(max-width:820px){.lab{grid-template-columns:1fr}}
+  .bigrow{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:8px}
+  .stat .v{font-family:var(--mono);font-size:19px;font-weight:600}
+  .stat .k{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .verdict{font-family:var(--mono);font-size:13px;font-weight:700;padding:5px 12px;border-radius:8px;display:inline-block}
+  .verdict.evid{color:#04150d;background:var(--evid)} .verdict.fake{color:#1a0410;background:var(--fake)}
+  .note{color:var(--dim);font-size:13.5px;border-left:2px solid var(--edge);padding-left:13px;margin:16px 0 0}
+  .note b{color:var(--violet2);font-weight:400}
+  code{font-family:var(--mono);font-size:.9em;color:var(--violet2);background:#170f28;padding:1px 5px;border-radius:5px}
+  footer{margin-top:42px;border-top:1px solid var(--edge);padding-top:18px;color:var(--faint);font-family:var(--mono);font-size:11px;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Purple Paper - side-sheet - learning machines - XII - the sealed reveal</div>
+  <h1>The Commitment Box - sealed verdicts, <em>simultaneous reveal</em></h1>
+  <div class="sub">Two witnesses judge the same question. The trap: if the second can <em>see</em> the first before
+    deciding, it can copy it - "they agree!" - and the agreement is worthless, an echo wearing a second face. The fix
+    isn't a Schrödinger box that hides the answer; it's a <b>commitment box</b>: each seals its verdict <em>blind</em>,
+    then both open at once. Sealing makes agreement mean something, because you can't echo what you committed before
+    hearing.</div>
+  <div class="lin"><b>peek -> agreement rises, evidence collapses</b> (manufactured consensus) ·
+    <b>commit -> agreement is Bayesian evidence</b> · verified: committed agreement = s²/(s²+(1-s)²), peeked agreement = base rate</div>
+</header>
+
+<section>
+  <h2>The box - seal blind, or let the second peek</h2>
+  <p class="lede">Each item has a hidden truth. Two witnesses judge with skill you set. In <b>COMMIT</b>, both seal
+    blind and reveal together. In <b>PEEK</b>, witness B sees A's verdict first - and (with the adversary on) just
+    copies it. Watch the two live traces: <span style="color:var(--evid)">P(correct | they agree)</span> - the actual
+    value of consensus - against the <span style="color:var(--base)">base skill line</span>. Under commit it lifts
+    above. Under peek, agreement shoots up while the line <em>drops back to base</em>: more consensus, zero evidence.</p>
+
+  <div class="panel">
+    <div class="controls">
+      <button id="commit" class="on">mode: COMMIT</button>
+      <button id="adv" class="fake">B echoes A</button>
+      <span style="width:8px"></span>
+      <label class="sl">skill A <input type="range" id="sa" min="50" max="95" value="70"><span id="saL" class="mono">.70</span></label>
+      <label class="sl">skill B <input type="range" id="sb" min="50" max="95" value="70"><span id="sbL" class="mono">.70</span></label>
+      <button id="run" class="on">▶ run</button>
+      <button id="reset">reset</button>
+    </div>
+
+    <div class="lab">
+      <div>
+        <canvas id="box" width="560" height="260"></canvas>
+        <div class="cap">two sealed verdicts opening together · in PEEK, B's eye-beam reads A before sealing</div>
+        <canvas id="spark" width="560" height="150" style="margin-top:12px"></canvas>
+        <div class="cap"><span style="color:var(--violet)">agreement rate</span> ·
+          <span style="color:var(--evid)">P(correct | agree)</span> ·
+          <span style="color:var(--base)">base skill (what one witness alone gives)</span></div>
+      </div>
+      <div style="min-width:190px">
+        <div class="bigrow">
+          <div class="stat"><div class="v" id="agree" style="color:var(--violet2)">--</div><div class="k">agreement</div></div>
+          <div class="stat"><div class="v" id="pca" style="color:var(--evid)">--</div><div class="k">P(correct|agree)</div></div>
+        </div>
+        <div class="bigrow">
+          <div class="stat"><div class="v" id="lift" style="color:var(--evid)">--</div><div class="k">evidential lift</div></div>
+          <div class="stat"><div class="v" id="wrong" style="color:var(--fake)">--</div><div class="k">wrong admitted</div></div>
+        </div>
+        <div><span class="verdict evid" id="verdict">AGREEMENT IS EVIDENCE</span></div>
+        <div class="note" id="readnote" style="font-size:12.5px">Committed and blind: when both independently land on
+          the same answer, it's much more likely right than either alone. Agreement <b>lifts</b> above the base line -
+          real evidence.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Where it stands</h2>
+  <p class="lede">Not Schrödinger's box - that hides the answer and launders the disagreement, the exact move the whole
+    series refuses. This is a <b>commitment box</b>: seal blind, reveal together. Real mechanism, real place.</p>
+
+  <div class="note"><b>The primitive is old.</b> Commit-then-reveal is textbook cryptography - a locked box that's
+    <em>hiding</em> (you can't peek) and <em>binding</em> (you can't change it after) - the foundation of
+    zero-knowledge proofs, sealed-bid auctions, and coin-flipping by telephone (1981). The reason it works is a known
+    soundness rule: without commitment, a party can choose its answer <em>after</em> seeing the challenge and cheat.
+    That rule, verified here, is exactly why peeking fakes agreement.</div>
+
+  <div class="note" style="margin-top:14px"><b>The application is half-built.</b> Commit-then-reveal is now being
+    bolted onto LLM verification (VeriLLM, CommitLLM, 2025-26) - but to prove the <em>computation</em> ran honestly,
+    not to make a <em>truth-judgment</em> trustworthy. And the abstention world (semantic entropy, ensembles,
+    self-consistency) checks agreement but <em>never commits the witnesses</em> - so it's wide open to the echo you
+    just watched manufacture consensus.</div>
+
+  <div class="note" style="margin-top:14px"><b>The seam is yours.</b> Borrow the cryptographer's commitment discipline
+    to fix the abstention world's independence flaw: <em>don't trust that two views agree until you've proven they
+    couldn't have copied each other.</em> That's bilateral ignorance, made into a protocol - and it closes the
+    cheap half of the independence problem (no echo at decision time). It does <b>not</b> close the deep half: two
+    witnesses trained on the same data can still independently commit to the same shared lie. Sealing the conversation
+    can't unshare the world they learned from. The box is real, and the frontier still holds one wall past it.</div>
+
+  <div class="note" style="margin-top:14px;font-size:13px">Verified in Node before building: committed agreement
+    P(correct|agree)=84.5% lands exactly on the independent-vote posterior s²/(s²+(1-s)²); peeked/echoed agreement hits
+    100% while P(correct|agree) collapses to the 70% base rate and every one of the first witness's errors passes the
+    "consensus" gate. The traces above are that result, live.</div>
+</section>
+
+<footer>
+  THE COMMITMENT BOX - purple paper side-sheet XII - sealed verdicts, simultaneous reveal<br>
+  verified in Node · commit: P(correct|agree)=s²/(s²+(1-s)²)=84.5% (evidence) · peek/echo: agreement->100%, P(correct|agree)->base rate (manufactured) · wrong-admitted doubles under peek<br>
+  commitment schemes: Blum 1981, foundational crypto · commit-then-reveal for LLM verifiers: VeriLLM/CommitLLM 2025-26 (computation integrity) · for abstention agreement: the open seam
+</footer>
+
+<script>
+"use strict";
+const DIMS={ box:[560,260], spark:[560,150] };
+function fit(c){ const [W,H]=DIMS[c.id]||[c.width,c.height]; const dpr=window.devicePixelRatio||1;
+  const need=Math.round(W*dpr); if(c.width!==need){ c.width=need; c.height=Math.round(H*dpr); c.style.width=W+'px'; c.style.height=H+'px'; }
+  const g=c.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); return {g,w:W,h:H}; }
+let CLOCK=0;
+function rng(s){let x=s>>>0;return()=>{x=(Math.imul(x,1103515245)+12345)&0x7fffffff;return x/0x7fffffff;};}
+let R=rng(0xC0DE);
+
+let mode='commit', adversary=false, sA=0.70, sB=0.70, running=true;
+let agreeN=0, agreeCorrect=0, admitted=0, admittedWrong=0, total=0;
+let sparkA=[], sparkP=[]; // agreement rate, P(correct|agree)
+let last=null;
+function reset(){ R=rng(0xC0DE); agreeN=0;agreeCorrect=0;admitted=0;admittedWrong=0;total=0;sparkA=[];sparkP=[];last=null; }
+
+function judge(truth,skill){ return R()<skill?truth:1-truth; }
+function step(){
+  const truth=R()<0.5?1:0;
+  const a=judge(truth,sA);
+  let b, peeked=false;
+  if(mode==='commit'){ b=judge(truth,sB); }
+  else { peeked=true; if(adversary){ b=a; } else { b=(R()<0.85)?a:judge(truth,sB); } }
+  const agreed=(a===b); total++;
+  if(agreed){ agreeN++; if(a===truth)agreeCorrect++; admitted++; if(a!==truth)admittedWrong++; }
+  last={truth,a,b,agreed,peeked,correct:a===truth};
+  const ar=agreeN/total, pca=agreeN?agreeCorrect/agreeN:0;
+  sparkA.push(ar); if(sparkA.length>200)sparkA.shift();
+  sparkP.push(pca); if(sparkP.length>200)sparkP.shift();
+  return {ar,pca};
+}
+
+function drawBox(){
+  const {g,w,h}=fit(document.getElementById('box')); g.clearRect(0,0,w,h);
+  const s=last; const baseR=(sA+sB)/2;
+  // truth token center top
+  const tx=w/2, ty=34;
+  if(s){ g.fillStyle=s.truth? '#34d399':'#fb7185'; g.globalAlpha=.4; g.beginPath(); g.arc(tx,ty,9,0,7); g.fill(); g.globalAlpha=1;
+    g.fillStyle='#6b5a8c'; g.font='10px ui-monospace,monospace'; g.textAlign='center'; g.fillText('hidden truth',tx,ty-15); }
+  // two envelopes
+  const ax=w*0.28, bx=w*0.72, ey=150, ew=120, eh=78;
+  function envelope(cx,who,col,verdict,correct){
+    g.strokeStyle=col; g.lineWidth=2; g.fillStyle='#120c20';
+    g.beginPath(); g.rect(cx-ew/2,ey-eh/2,ew,eh); g.fill(); g.stroke();
+    // flap (sealed = triangle down)
+    g.beginPath(); g.moveTo(cx-ew/2,ey-eh/2); g.lineTo(cx,ey); g.lineTo(cx+ew/2,ey-eh/2); g.stroke();
+    g.fillStyle=col; g.font='bold 11px ui-monospace,monospace'; g.textAlign='center'; g.fillText(who, cx, ey-eh/2-8);
+    // verdict revealed (both open together)
+    if(verdict!=null){ g.fillStyle=verdict? '#34d399':'#fb7185'; g.globalAlpha=.9;
+      g.beginPath(); g.arc(cx,ey+18,12,0,7); g.fill(); g.globalAlpha=1;
+      g.fillStyle='#0a0710'; g.font='bold 12px ui-monospace,monospace'; g.fillText(verdict?'1':'0',cx,ey+22);
+      g.fillStyle=correct?'#34d399':'#fb7185'; g.font='9px ui-monospace,monospace'; g.fillText(correct?'✓':'✗',cx,ey+40); }
+  }
+  envelope(ax,'witness A','#34d399', s?s.a:null, s?(s.a===s.truth):false);
+  envelope(bx,'witness B','#22d3ee', s?s.b:null, s?(s.b===s.truth):false);
+  // peek beam
+  if(mode==='peek' && s){ g.strokeStyle='#fb7185'; g.globalAlpha=.6; g.lineWidth=1.5; g.setLineDash([4,4]); g.lineDashOffset=-(CLOCK*0.15);
+    g.beginPath(); g.moveTo(bx-ew/2, ey); g.lineTo(ax+ew/2, ey); g.stroke(); g.setLineDash([]); g.globalAlpha=1;
+    g.fillStyle='#fb7185'; g.font='9px ui-monospace,monospace'; g.textAlign='center'; g.fillText('B peeks at A '+(adversary?'(copies)':''), w/2, ey-4); }
+  else if(s){ g.fillStyle='#6b5a8c'; g.font='9px ui-monospace,monospace'; g.textAlign='center'; g.fillText('sealed blind - opened together', w/2, ey-4); }
+  // agreement verdict
+  if(s){ g.fillStyle=s.agreed?'#a78bfa':'#46356b'; g.font='11px ui-monospace,monospace'; g.textAlign='center';
+    g.fillText(s.agreed?'AGREE -> admit':'disagree -> refuse', w/2, ey+eh/2+30); }
+}
+function drawSpark(){
+  const {g,w,h}=fit(document.getElementById('spark')); g.clearRect(0,0,w,h);
+  const pad=6; const baseR=(sA+sB)/2;
+  [0,.5,1].forEach(f=>{ const y=pad+(1-f)*(h-pad*2); g.strokeStyle='#241738'; g.lineWidth=1;
+    g.beginPath(); g.moveTo(pad,y); g.lineTo(w-pad,y); g.stroke();
+    g.fillStyle='#4a3a6b'; g.font='8px ui-monospace,monospace'; g.textAlign='left'; g.fillText((f*100)+'%',pad+1,y-1); });
+  // base skill line
+  const by=pad+(1-baseR)*(h-pad*2); g.strokeStyle='#fbbf24'; g.globalAlpha=.7; g.lineWidth=1.5; g.setLineDash([5,4]);
+  g.beginPath(); g.moveTo(pad,by); g.lineTo(w-pad,by); g.stroke(); g.setLineDash([]); g.globalAlpha=1;
+  g.fillStyle='#fbbf24'; g.font='9px ui-monospace,monospace'; g.textAlign='right'; g.fillText('base '+(baseR*100).toFixed(0)+'%', w-pad, by-3);
+  const plot=(buf,col)=>{ if(buf.length<2)return; g.strokeStyle=col; g.lineWidth=2; g.beginPath();
+    buf.forEach((v,i)=>{ const x=pad+(i/(buf.length-1))*(w-pad*2), y=pad+(1-v)*(h-pad*2); i?g.lineTo(x,y):g.moveTo(x,y); }); g.stroke(); };
+  plot(sparkA,'#a78bfa'); plot(sparkP,'#34d399');
+}
+function sync(){
+  const ar=sparkA[sparkA.length-1]||0, pca=sparkP[sparkP.length-1]||0, baseR=(sA+sB)/2;
+  document.getElementById('agree').textContent=(ar*100).toFixed(0)+'%';
+  document.getElementById('pca').textContent=(pca*100).toFixed(0)+'%';
+  const lift=pca-baseR;
+  document.getElementById('lift').textContent=(lift>=0?'+':'')+(lift*100).toFixed(0)+'pt';
+  document.getElementById('lift').style.color=lift>0.04?'#34d399':'#fb7185';
+  document.getElementById('wrong').textContent=admitted?(admittedWrong/admitted*100).toFixed(0)+'%':'--';
+  const v=document.getElementById('verdict');
+  const manufactured = (mode==='peek') && lift<0.04;
+  if(manufactured){ v.textContent='CONSENSUS MANUFACTURED'; v.className='verdict fake';
+    document.getElementById('readnote').innerHTML='B saw A and echoed it. Agreement is <b style="color:var(--fake)">high</b> but its value collapsed to the base line - the second verdict carried no independent information. Every error of A passes the gate. The consensus is a lie.';
+  } else { v.textContent='AGREEMENT IS EVIDENCE'; v.className='verdict evid';
+    document.getElementById('readnote').innerHTML='Committed and blind: when both independently land on the same answer it\'s much more likely right than either alone. Agreement <b>lifts +'+(lift*100).toFixed(0)+'pt</b> above base - real evidence.';
+  }
+}
+
+document.getElementById('commit').onclick=function(){ mode=(mode==='commit')?'peek':'commit'; this.textContent='mode: '+mode.toUpperCase(); this.classList.toggle('on',mode==='commit'); reset(); };
+document.getElementById('adv').onclick=function(){ adversary=!adversary; this.classList.toggle('on',adversary); if(adversary&&mode==='commit'){ mode='peek'; document.getElementById('commit').textContent='mode: PEEK'; document.getElementById('commit').classList.remove('on'); } reset(); };
+document.getElementById('sa').oninput=function(){ sA=(+this.value)/100; document.getElementById('saL').textContent=sA.toFixed(2).slice(1); reset(); };
+document.getElementById('sb').oninput=function(){ sB=(+this.value)/100; document.getElementById('sbL').textContent=sB.toFixed(2).slice(1); reset(); };
+document.getElementById('run').onclick=function(){ running=!running; this.classList.toggle('on',running); this.textContent=running?'▶ run':'❚❚ paused'; if(running) requestAnimationFrame(loop); };
+document.getElementById('reset').onclick=reset;
+
+reset();
+function loop(){ CLOCK++; for(let i=0;i<25;i++) step(); drawBox(); drawSpark(); sync(); if(running) requestAnimationFrame(loop); }
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
