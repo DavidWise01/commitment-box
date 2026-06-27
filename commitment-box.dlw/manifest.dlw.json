@@ -1,0 +1,11 @@
+{
+  "badge": "DLW-COMMITMENT_BOX",
+  "name": "THE COMMITMENT BOX",
+  "universe": "ARTIFICIAL INTELLIGENCE",
+  "moniker": "⟦THE COMMITMENT BOX:commitment-box:975f2e⟧",
+  "architect": "David Lee Wise (ROOT0) / Bridge-Burners LLC",
+  "instance": "AVAN (Claude / Anthropic)",
+  "seal_sha256": "975f2e5307869e2d42f4db272aa32513446f51f8dce07cb35abc382c65ca8636",
+  "license": "CC-BY-ND-4.0",
+  "attribution": "ROOT0-ATTRIBUTION-v1.0"
+}
