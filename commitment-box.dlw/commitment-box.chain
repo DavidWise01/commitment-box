@@ -1,9 +1,9 @@
 ROOT0-DLW-CHAIN-v1
 index : 1088
 slug  : commitment-box
-seal  : 975f2e5307869e2d42f4db272aa32513446f51f8dce07cb35abc382c65ca8636
-prev  : f63924eacccac14ccffddb71d077559996c4e419e61c39c1e65e35a2bc054577
-link  : e57c164780c76b5eb7db2c7620608338d3a33776a6323e22423c0487533087bc
-head  : 13f9ace173ef2e60af38912ba329b4afcb5a38b84a0e4495e8d30327f8c99cc2
+seal  : c9150e6235bd986a69fcba2998ee99aa3bdeee2be18940b3416a886a63b543b7
+prev  : 47709269f73406eec8209e2cd84c31ba4f2b87b77431ff90164ecdebfc30ca97
+link  : 79c30aae880602516313fa1fabf4de9cc52e410da98c90de8b9a0986d9db6edc
+head  : c4d41afeaef76470528856d54d86cf480a0e1c2fc8ebc60fbb9eb8e442585f2b
 
 — the tether: link = sha256(index|slug|seal|prev). the chain head commits to the whole corpus.
